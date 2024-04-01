@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Demo.Data;
 using Demo.Models;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Demo.Controllers
 {
@@ -42,7 +45,36 @@ namespace Demo.Controllers
 
             return View(user);
         }
-
+        public IActionResult Login()
+        {
+            return View();
+        }
+        public IActionResult Logout()
+        {
+            HttpContext.SignOutAsync();
+            return View("Login");
+        }
+        [HttpPost]
+        public IActionResult Login(string name, string password)
+        {
+            var user = _context.User.Where(u=>u.Name == name && u.Password == password).FirstOrDefault<User>();
+            if (user == null || _context.User == null)
+            {
+                return View();
+            }
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, user.Name),
+                new Claim(ClaimTypes.Role, user.Role),
+            };
+            var claimsIdentity = new ClaimsIdentity(
+            claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            HttpContext.SignInAsync(
+            CookieAuthenticationDefaults.AuthenticationScheme,
+            new ClaimsPrincipal(claimsIdentity)
+            );
+            return RedirectToAction("Index","Home");
+        }
         // GET: Users/Create
         public IActionResult Create()
         {

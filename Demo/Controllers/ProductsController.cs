@@ -25,9 +25,14 @@ namespace Demo.Controllers
             var demoContext = _context.Product.Include(p => p.Category);
             return View(await demoContext.ToListAsync());
         }
-
-        // GET: Products/Details/5
-        public async Task<IActionResult> Details(int? id)
+        [HttpPost]
+		public async Task<IActionResult> Index(int catid, string keywords)
+		{
+			var demoContext = _context.Product.Include(p => p.Category).Where(p => p.Name.Contains(keywords) && p.CategoryId==catid);
+			return View(await demoContext.ToListAsync());
+		}
+		// GET: Products/Details/5
+		public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
